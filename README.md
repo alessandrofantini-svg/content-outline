@@ -13,7 +13,7 @@ Il progetto include ora una web-app sviluppata con Streamlit per generare spunti
 
 ### Prerequisiti
 - Python 3.9 o superiore
-- Account DataForSEO con credenziali API valide
+- Account DataForSEO con credenziali API valide (ricorda di abilitare eventuali whitelist IP)
 - API key OpenAI
 
 Installa le dipendenze richieste con:
@@ -29,6 +29,8 @@ streamlit run streamlit_app.py
 ```
 
 L'applicazione si avvierà sul browser locale (di default su `http://localhost:8501`). Inserisci le credenziali DataForSEO e OpenAI direttamente nella sidebar dell'interfaccia.
+
+> ℹ️ Se l'app segnala `Accesso non autorizzato a DataForSEO`, verifica la correttezza di login e password e che l'indirizzo IP da cui stai eseguendo l'app sia autorizzato nel tuo account DataForSEO.
 
 ## Struttura
 - `README.md`: breve descrizione del progetto e delle istruzioni operative.

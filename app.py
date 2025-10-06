@@ -48,16 +48,28 @@ def fetch_serp_results(
         json={"data": [payload]},
         timeout=30,
     )
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as exc:  # noqa: PERF203 - explicit error handling
+        if response.status_code == 401:
+            raise ValueError(
+                "Accesso non autorizzato a DataForSEO. Verifica login, password e eventuali restrizioni IP."
+            ) from exc
+        raise
     data = response.json()
-    tasks = data.get("tasks", [])
+    tasks = data.get("tasks") or []
     if not tasks:
         raise ValueError("La risposta dell'API DataForSEO non contiene task.")
 
     results: List[SerpResult] = []
     for task in tasks:
-        for result in task.get("result", []):
-            items = result.get("items", [])
+        task_results = task.get("result") or []
+        if not isinstance(task_results, list):
+            continue
+        for result in task_results:
+            items = result.get("items") or []
+            if not isinstance(items, list):
+                continue
             for item in items:
                 if item.get("type") != "organic" or "url" not in item:
                     continue
