@@ -6,7 +6,7 @@ Include esempi di struttura minima su cui effettuare prove e sperimentazioni.
 ## Novità: SEO Prompt Generator
 Il progetto include ora una web-app sviluppata con Streamlit per generare spunti ottimizzati per la SEO a partire da una query target. L'applicazione:
 
-- Recupera i risultati della SERP tramite le API di DataForSEO (endpoint Google Organic Live Regular) inviando il payload JSON conforme alla [documentazione ufficiale](https://docs.dataforseo.com/v3/serp/google/organic/live/regular/).
+- Recupera i risultati della SERP tramite le API di DataForSEO (endpoint Google Organic Live Regular) seguendo la struttura richiesta dalla [documentazione ufficiale](https://docs.dataforseo.com/v3/serp/google/organic/live/regular/).
 - Analizza i contenuti dei primi competitor prelevando automaticamente un estratto delle loro pagine.
 - Elabora outline, keyword e suggerimenti editoriali grazie alle API di OpenAI.
 - Consente di scaricare in formato Markdown il brief generato.
@@ -33,8 +33,6 @@ Il comando segue le indicazioni della [guida ufficiale di Streamlit](https://doc
 > ℹ️ Se l'app segnala `Accesso non autorizzato a DataForSEO`, verifica la correttezza di login e password e che l'indirizzo IP da cui stai eseguendo l'app sia autorizzato nel tuo account DataForSEO.
 >
 > ℹ️ Se non vengono mostrati risultati SERP, assicurati che la query scelta generi risultati organici per la lingua/località indicate in DataForSEO, che il task risulti `status_code=20000` nella risposta e valuta di aumentare la profondità o cambiare dispositivo di ricerca.
->
-> ℹ️ Se ricevi l'errore `POST Data Is Invalid (40503)`, verifica che keyword, lingua e località corrispondano esattamente ai valori supportati da DataForSEO e che il payload rispetti la struttura prevista dalla documentazione. L'app invia automaticamente i campi richiesti (incluso il sistema operativo coerente con il dispositivo selezionato) e arrotonda il numero di risultati richiesti al valore di profondità più vicino consentito dall'API (multipli di 10 fino a un massimo di 100).
 
 ## Struttura
 - `README.md`: breve descrizione del progetto e delle istruzioni operative.
