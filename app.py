@@ -35,17 +35,29 @@ def fetch_serp_results(
     device: str = "desktop",
 ) -> List[SerpResult]:
     """Fetch SERP results from DataForSEO following the official API contract."""
+    keyword = (keyword or "").strip()
+    if not keyword:
+        raise ValueError("La keyword da analizzare è obbligatoria per la richiesta DataForSEO.")
+
+    normalized_depth = max(10, min(100, ((limit - 1) // 10 + 1) * 10))
+
     payload = {
         "keyword": keyword,
-        "language_name": language_name,
-        "location_name": location_name,
         "device": device,
-        "depth": limit,
+        "depth": normalized_depth,
     }
+    if device == "desktop":
+        payload["os"] = "windows"
+    elif device == "mobile":
+        payload["os"] = "android"
+    if language_name and language_name.strip():
+        payload["language_name"] = language_name.strip()
+    if location_name and location_name.strip():
+        payload["location_name"] = location_name.strip()
     response = requests.post(
         DATAFORSEO_ENDPOINT,
         auth=(login, password),
-        json={"data": [payload]},
+        json=[payload],
         timeout=30,
     )
     try:
@@ -72,10 +84,17 @@ def fetch_serp_results(
     results: List[SerpResult] = []
     for task in tasks:
         if task.get("status_code") != 20000:
+            status_code = task.get("status_code")
+            status_message = task.get("status_message", "nessun messaggio disponibile")
+            if status_code == 40503:
+                raise ValueError(
+                    "Task DataForSEO non riuscito: POST Data Is Invalid. "
+                    "Verifica che keyword, lingua e località corrispondano ai valori supportati "
+                    "da DataForSEO e che la profondità richiesta sia consentita."
+                )
             raise ValueError(
                 "Task DataForSEO non riuscito: "
-                f"{task.get('status_message', 'nessun messaggio disponibile')} "
-                f"(codice {task.get('status_code')})."
+                f"{status_message} (codice {status_code})."
             )
 
         task_results = task.get("result") or []
@@ -250,6 +269,9 @@ def main() -> None:
         location_name = st.text_input("Località", value="Italy")
         language_name = st.text_input("Lingua", value="Italian")
         serp_limit = st.slider("Numero di risultati SERP", min_value=3, max_value=20, value=10)
+        st.caption(
+            "L'app richiede a DataForSEO la profondità disponibile più vicina (multipli di 10, fino a 100)."
+        )
         device = st.selectbox("Dispositivo", ["desktop", "mobile"])
 
     st.subheader("Query da analizzare")

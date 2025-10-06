@@ -28,7 +28,7 @@ pip install -r requirements.txt
 streamlit run streamlit_app.py
 ```
 
-L'applicazione si avvierà sul browser locale (di default su `http://localhost:8501`). Inserisci le credenziali DataForSEO e OpenAI direttamente nella sidebar dell'interfaccia.
+Il comando segue le indicazioni della [guida ufficiale di Streamlit](https://docs.streamlit.io/get-started/installation/community-cloud) e avvierà l'applicazione sul browser locale (di default su `http://localhost:8501`). Inserisci le credenziali DataForSEO e OpenAI direttamente nella sidebar dell'interfaccia.
 
 > ℹ️ Se l'app segnala `Accesso non autorizzato a DataForSEO`, verifica la correttezza di login e password e che l'indirizzo IP da cui stai eseguendo l'app sia autorizzato nel tuo account DataForSEO.
 >
@@ -39,6 +39,12 @@ L'applicazione si avvierà sul browser locale (di default su `http://localhost:8
 - `app.py`: applicazione Streamlit che integra DataForSEO e OpenAI per la generazione degli spunti SEO.
 - `streamlit_app.py`: semplice entrypoint da utilizzare su Streamlit Cloud o ambienti che richiedono questo nome di file.
 - `requirements.txt`: elenco delle dipendenze Python richieste.
+
+### Distribuzione su Streamlit Community Cloud
+
+- Mantieni `streamlit_app.py` come entrypoint principale: è il file che Streamlit Cloud esegue automaticamente.
+- Assicurati che `requirements.txt` contenga tutte le dipendenze necessarie (Streamlit, Requests, BeautifulSoup e OpenAI) prima di effettuare il deploy.
+- Configura le credenziali sensibili (login e password DataForSEO, API key OpenAI) tramite gli `Secrets` del progetto Streamlit, come indicato dalla [documentazione ufficiale](https://docs.streamlit.io/get-started/installation/community-cloud).
 
 ## Utilizzo
 Apri il repository, configura le variabili richieste nell'app e personalizza il flusso secondo le esigenze delle tue prove.
