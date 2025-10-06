@@ -34,11 +34,11 @@ def fetch_serp_results(
     password: str,
     device: str = "desktop",
 ) -> List[SerpResult]:
-    """Fetch SERP results from DataForSEO."""
+    """Fetch SERP results from DataForSEO following the official API contract."""
     payload = {
         "keyword": keyword,
-        "location_name": location_name,
         "language_name": language_name,
+        "location_name": location_name,
         "device": device,
         "depth": limit,
     }
@@ -56,30 +56,71 @@ def fetch_serp_results(
                 "Accesso non autorizzato a DataForSEO. Verifica login, password e eventuali restrizioni IP."
             ) from exc
         raise
-    data = response.json()
-    tasks = data.get("tasks") or []
+
+    payload_response = response.json()
+    if payload_response.get("status_code") != 20000:
+        raise ValueError(
+            "Richiesta DataForSEO non riuscita: "
+            f"{payload_response.get('status_message', 'errore sconosciuto')} "
+            f"(codice {payload_response.get('status_code')})."
+        )
+
+    tasks = payload_response.get("tasks") or []
     if not tasks:
         raise ValueError("La risposta dell'API DataForSEO non contiene task.")
 
     results: List[SerpResult] = []
     for task in tasks:
+        if task.get("status_code") != 20000:
+            raise ValueError(
+                "Task DataForSEO non riuscito: "
+                f"{task.get('status_message', 'nessun messaggio disponibile')} "
+                f"(codice {task.get('status_code')})."
+            )
+
         task_results = task.get("result") or []
-        if not isinstance(task_results, list):
-            continue
+        if not isinstance(task_results, list) or not task_results:
+            raise ValueError(
+                "Il task DataForSEO non ha restituito risultati. "
+                "Verifica keyword, località, lingua e profondità impostate."
+            )
+
         for result in task_results:
-            items = result.get("items") or []
-            if not isinstance(items, list):
+            raw_items = result.get("items")
+            if isinstance(raw_items, dict):
+                raw_items = raw_items.get("items")
+            if not raw_items or not isinstance(raw_items, list):
                 continue
-            for item in items:
-                if item.get("type") != "organic" or "url" not in item:
+
+            for item in raw_items:
+                url = item.get("url")
+                if not url:
                     continue
+                item_type = (item.get("type") or "").lower()
+                if item_type and not any(
+                    keyword in item_type
+                    for keyword in ("organic", "featured_snippet", "answer_box")
+                ):
+                    continue
+
                 serp_result = SerpResult(
-                    position=item.get("rank_group", 0),
+                    position=item.get("rank_group")
+                    or item.get("rank_absolute")
+                    or 0,
                     title=item.get("title", ""),
-                    url=item["url"],
-                    snippet=item.get("snippet", ""),
+                    url=url,
+                    snippet=item.get("snippet")
+                    or item.get("description")
+                    or "",
                 )
                 results.append(serp_result)
+
+    if not results:
+        raise ValueError(
+            "Nessun risultato organico compatibile restituito da DataForSEO. "
+            "Controlla la query e le impostazioni oppure prova ad aumentare la profondità."
+        )
+
     return results[:limit]
 
 
@@ -240,7 +281,11 @@ def main() -> None:
                 st.stop()
 
         if not serp_results:
-            st.warning("Nessun risultato SERP trovato per la query specificata.")
+            st.warning(
+                "Nessun risultato SERP trovato per la query specificata. Verifica che la keyword "
+                "generi risultati organici in DataForSEO per la località/lingua selezionate, "
+                "oppure prova a modificare dispositivo o profondità richiesta."
+            )
             st.stop()
 
         st.success("Risultati SERP recuperati.")
